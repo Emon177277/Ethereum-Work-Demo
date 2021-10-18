@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Depositor Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    body { padding-top: 50px; }
+  </style>
+  <script 
+  src="https://code.jquery.com/jquery-3.6.0.min.js" 
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous">
+</script>
+<!-- <script src="apicallerdepositor.js">
+
+
+
+</script> -->
+</head>
+<body>
+
+  <div class="container">
+    <div class="jumbotron">
+      <h1>Depositor page</h1>
+      <a href="arbitror">Go To Arbitror Page</a>
+    </div>
+
+    <div class="jumbotron" style="padding: 5px;">
+      <h2>Set Depositor Credentials Here or Create Account</h2><br>
+      <label>Depositor Account Address</label>
+      <input type="text" id="depositorOwnAddress" placeholder="Depositor Address">
+      <label>Depositor Account PrivateKey</label>
+      <input type="text" id="depositorOwnPrivateKey" placeholder="Depositor Private Key"> or 
+      <input type="button" id="createAccount" value="Create An Account"> and them set them here later
+    </div>
+
+    <div class="jumbotron" style="padding: 20px;">
+      
+      <h2> Deposite Here</h2><br>
+      <label>Recipent Address</label>
+      <input type="text" id="recipentAddress" placeholder="Recipient Address">
+      <label>Amount</label>
+      <input type="text" id="amount" placeholder="Amount">
+      <input type="button" id="deposite" value="Deposite">
+      <br>
+
+  </div>
+
+    <div class="jumbotron" style="padding: 20px;">
+      
+        <h2>View Deposite Status, Withdraw, Confirm Payment Or Check Account Balance From Here</h2><br>
+        <label>Depositor Address(which is also the deposite id)</label>
+        <input type="button" id="getOwnDepositeStatus" value="Get Deposite Status">
+        <!-- <input type="button" id="getOwnDepositeFullInfo" value="Get Deposite Full Info"> -->
+        <input type="button" id="withDrawDeposite" value="Withdraw Deposite">
+        <input type="button" id="confirmPayment" value="Confirm Payment">
+        <input type="button" id="checkBalance" value="Check Balance">
+        <br>
+
+    </div>
+
+    <diV class="jumbotron">
+      <h3>Results: </h3><br>
+      <p id="depositeOwnStatusResultIn" style="background-color: cadetblue; width: fit-content;"></p>
+    </diV>
+
+  </div>
+
+  <script>
+      $(function(){
+
+        $('#deposite').on("click", function(){
+            let deposite = {
+
+                    depositorAddress		    : $("#depositorOwnAddress").val(), 
+                    depositorPrivateKey	    : $("#depositorOwnPrivateKey").val(), 
+                    recipeintAddress 		    : $("#recipentAddress").val(), 
+                    amount				          : $("#amount").val()
+              }
+            
+              if( !deposite.depositorAddress || !deposite.depositorPrivateKey || !deposite.recipeintAddress || !deposite.amount){
+                alert("depositor Address, depositor private key, recipient address and amount field can not be null");
+                return;
+              }
+
+            
+
+              $.ajax({
+                type: "POST",
+                url:"/deposite/creation",
+                data: deposite,
+                success: function(value){
+                            $("#depositeOwnStatusResultIn").text(value.message);
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#depositeOwnStatusResultIn").text(err.message);
+                            console.log(err);
+                          }
+              })
+
+        })
+
+        $('#getOwnDepositeStatus').on("click", function(){
+                     let reqBody ={
+                                    depositorAddress		: $("#depositorOwnAddress").val()
+                                  }
+
+                    if(! reqBody.depositorAddress){
+                      alert("depositor address can not be null");
+                    }
+
+                    $.ajax({
+                            type: "POST",
+                            url:"/deposite/status",
+                            data: reqBody,
+                            success: function(value){
+                                        $("#depositeOwnStatusResultIn").text(value.detailed_response);
+                                        console.log(value);
+                                      },
+                            error:    function(err){
+                                        $("#depositeOwnStatusResultIn").text(err.message);
+                                        console.log(err);
+                                      }
+                          })
+        })
+
+        $('#getOwnDepositeFullInfo').on("click", function(){
+                     let reqBody ={
+                                    depositorAddress		: $("#depositorOwnAddress").val()
+                                  }
+
+                    if(! reqBody.depositorAddress){
+                      alert("depositor address can not be null");
+                    }
+
+                    $.ajax({
+                            type: "POST",
+                            url:"/deposite/info",
+                            data: reqBody,
+                            success: function(value){
+                                        $("#depositeOwnStatusResultIn").text(value.detailed_response[5]);
+                                        console.log(value);
+                                      },
+                            error:    function(err){
+                                        $("#depositeOwnStatusResultIn").text(err.message);
+                                        console.log(err);
+                                      }
+                          })
+        })
+
+        $('#checkBalance').on("click", function(){
+                     let reqBody ={
+                                    address		: $("#depositorOwnAddress").val()
+                                  }
+
+                    if(! reqBody.address){
+                      alert("depositor address can not be null");
+                    }
+
+                    $.ajax({
+                            type: "POST",
+                            url:"/account/balance",
+                            data: reqBody,
+                            success: function(value){
+                                        $("#depositeOwnStatusResultIn").text(value.data + " wei");
+                                        console.log(value);
+                                      },
+                            error:    function(err){
+                                        $("#depositeOwnStatusResultIn").text(err.message);
+                                        console.log(err);
+                                      }
+                          })
+        })
+
+        $('#withDrawDeposite').on("click", function(){
+                     let reqBody ={
+                                      depositorAddress		: $("#depositorOwnAddress").val(),
+                                      depositorPrivateKey : $("#depositorOwnPrivateKey").val()
+                                  }
+
+                    if(! reqBody.depositorAddress || !reqBody.depositorPrivateKey){
+                      alert("depositor address and depositor private key can not be null");
+                    }
+
+                    console.log("kisu to print ho")
+                    
+                    $.ajax({
+                            type: "POST",
+                            url:"/deposite/withdraw",
+                            data: reqBody,
+                            success: function(value){
+                                        $("#depositeOwnStatusResultIn").text(value.message);
+                                        console.log(value);
+                                      },
+                            error:    function(err){
+                                        $("#depositeOwnStatusResultIn").text(err.message);
+                                        console.log(err);
+                                      }
+                          })
+        })
+
+        $('#confirmPayment').on("click", function(){
+                     let reqBody ={
+                                      depositorAddress		: $("#depositorOwnAddress").val(),
+                                      depositorPrivateKey : $("#depositorOwnPrivateKey").val()
+                                  }
+
+                    if(! reqBody.depositorAddress || !reqBody.depositorPrivateKey){
+                      alert("depositor address and depositor private key can not be null");
+                    }
+
+                    $.ajax({
+                            type: "POST",
+                            url:"/deposite/confirmation",
+                            data: reqBody,
+                            success: function(value){
+                                        $("#depositeOwnStatusResultIn").text(value.message);
+                                        console.log(value);
+                                      },
+                            error:    function(err){
+                                        $("#depositeOwnStatusResultIn").text(err.message);
+                                        console.log(err);
+                                      }
+                          })
+        })
+
+        $('#createAccount').on("click", function(){
+                  
+                    $.ajax({
+                            type: "POST",
+                            url:"/account/creation",
+                            success: function(value){
+                                        $("#depositeOwnStatusResultIn").text("address : " +value.data.address+"\n privateKey : " +value.data.privateKey);
+                                        console.log(value);
+                                      },
+                            error:    function(err){
+                                        $("#depositeOwnStatusResultIn").text(err.message);
+                                        console.log(err);
+                                      }
+                          })
+        })
+
+      
+
+      })
+  </script>
+</body>
+</html>

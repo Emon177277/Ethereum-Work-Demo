@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Arbitror Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    body { padding-top: 50px; }
+  </style>
+  <script 
+  src="https://code.jquery.com/jquery-3.6.0.min.js" 
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous">
+</script>
+
+</head>
+<body>
+
+  <div class="container">
+    <div class="jumbotron">
+      <h1>Arbitror page</h1>
+      <a href="depositor">Go To Depositor Page</a>
+    </div>
+
+    <div class="jumbotron" style="padding: 5px;">
+      <h2>Set Arbitror Credentials Here</h2><br>
+      <label>Arbitror Account Address</label>
+      <input type="text" id="arbitrorAddress" placeholder="Arbitror Address">
+      <label>Arbitror Account PrivateKey</label>
+      <input type="text" id="arbitrorPrivateKey" placeholder="Arbitror Private Key">
+    </div>
+
+    <div class="jumbotron" style="padding: 20px;">
+
+        <h2>View Deposite Status And Unlock Here</h2><br>
+        <label>Depositor Address(which is also the deposite id)</label>
+        <input type="text" id="depositorAddress" placeholder="Depositor Address" >
+        <input type="button" id="getDepositeStatus" value="Get Deposite Status">
+        <input type="button" id="getContractBalance" value="Get Contract Balance">
+        <input type="button" id="unlockDeposite" value="Unlock This Deposite"><br>
+
+    </div>
+
+    <diV class="jumbotron">
+      <h3>Results: </h3><br>
+      <p id="monitor" style="background-color: cadetblue; width: fit-content;"></p>
+    </diV>
+
+    <div class="jumbotron">
+      <h3>List of Approved Deposites Waiting To be Unlocked</h3>
+      <ul id="pendingList">
+
+      </ul>
+    </div>
+
+  </div>
+
+  
+
+  <script>
+      $(function(){
+
+
+        $.ajax({
+                type: "GET",
+                url:"/deposite/pending-unlock",
+                success: function(value){
+                            value.forEach(element => {
+                              $("#pendingList").append("<li>"+element+"</li>");
+                            });
+                          },
+                error:    function(err){
+                            $("#monitor").text(err.message);
+                            console.log(err);
+                          }
+              })
+        
+
+        $('#unlockDeposite').on("click", function(){
+            let reqBody = {              
+                    depositorAddress		: $("#depositorAddress").val(), 
+                    arbitrorPrivateKey	: $("#arbitrorPrivateKey").val(),
+                    arbitrorAddress		  : $("#arbitrorAddress").val()
+              }
+            
+              if( !reqBody.depositorAddress || !reqBody.arbitrorPrivateKey || !reqBody.arbitrorAddress){
+                alert("depositor address, arbitror privateKey and arbitror address must not be null");
+                return;
+              }
+
+            
+
+              $.ajax({
+                type: "POST",
+                url:"/deposite/unlock",
+                data: reqBody,
+                success: function(value){
+                            $("#monitor").text(value.message);
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#monitor").text(err.message);
+                            console.log(err);
+                          }
+              })
+
+        });
+
+        $('#getContractBalance').on("click", function(){
+
+              $.ajax({
+                type: "POST",
+                url:"/contract/balance",
+                success: function(value){
+                            $("#monitor").text(value + " wei ");
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#monitor").text(err);
+                            console.log(err);
+                          }
+              })
+
+        });
+
+
+        $('#getDepositeStatus').on("click", function(){
+            let reqBody = {              
+                            depositorAddress		: $("#depositorAddress").val(), 
+                          }
+              
+              if( !reqBody.depositorAddress){
+                alert("depositor addresscan not be null");
+                return;
+              }
+
+            
+
+              $.ajax({
+                type: "POST",
+                url:"/deposite/status",
+                data: reqBody,
+                success: function(value){
+                            $("#monitor").text(value.detailed_response);
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#monitor").text(err.message);
+                            console.log(err);
+                          }
+              })
+
+        });
+
+
+      })
+  </script>
+
+</body>
+</html>
